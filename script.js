@@ -209,7 +209,8 @@ function buildPlayerUrl({ autoplay = false } = {}) {
     rel: "0",
     controls: "1",
     loop: "1",
-    playlist: "UjNbyRUSsTQ"
+    playlist: "UjNbyRUSsTQ",
+    start: "10"
   });
 
   if (autoplay) {
