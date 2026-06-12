@@ -33,9 +33,6 @@
           <button class="primary-button" id="start-story" type="button">
             Começar nossa história
           </button>
-          <button class="secondary-button" id="music-toggle" type="button">
-            Tocar nossa música
-          </button>
         </div>
 
         <div class="hero-ornament" aria-hidden="true">
@@ -65,14 +62,14 @@
 
       <section class="section counter-section">
         <div class="section-heading reveal reveal-left">
-          <p class="eyebrow">Desde 29 de junho de 2013</p>
+          <p class="eyebrow">Desde o primeiro dia</p>
           <h2>Cada segundo virou memória</h2>
         </div>
 
         <div class="counter-card reveal reveal-right">
           <p class="counter-copy">
-            Desde 29 de junho de 2013, cada segundo ao seu lado virou parte da
-            nossa história.
+            Desde o primeiro instante, cada segundo ao seu lado virou parte da
+            nossa história mais bonita.
           </p>
           <div class="counter-grid" id="counter">
             <div class="counter-item">
@@ -199,7 +196,7 @@
           <div class="letter-content" id="letter-content" hidden>
             <p>Brelinha,</p>
             <p>
-              desde 2013, você faz parte da minha vida de um jeito que nenhuma
+              desde o começo, você faz parte da minha vida de um jeito que nenhuma
               palavra consegue explicar completamente.
             </p>
             <p>
@@ -228,20 +225,15 @@
       </p>
     </footer>
 
-    <section class="music-panel" aria-label="Player da nossa música">
-      <div class="music-copy">
-        <span>Nossa trilha sonora</span>
-        <small id="music-status">Toque para ouvir sem sair da página</small>
-      </div>
-      <iframe
-        id="youtube-player"
-        src="about:blank"
-        title="Nossa música"
-        allow="autoplay; encrypted-media; picture-in-picture"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-      ></iframe>
-    </section>
+    <audio
+      id="background-audio"
+      autoplay
+      loop
+      preload="auto"
+      aria-hidden="true"
+    >
+      <source src="assets/audio/nossa-musica.mp3" type="audio/mpeg" />
+    </audio>
 
     <div class="lightbox" id="lightbox" aria-hidden="true">
       <div class="lightbox-backdrop" data-close-lightbox></div>

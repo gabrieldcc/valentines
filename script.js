@@ -1,7 +1,6 @@
 const relationshipStart = new Date(2013, 5, 29, 0, 0, 0);
 const storySection = document.getElementById("historia");
 const startStoryButton = document.getElementById("start-story");
-const musicToggleButton = document.getElementById("music-toggle");
 const openLetterButton = document.getElementById("open-letter");
 const letterContent = document.getElementById("letter-content");
 const petalLayer = document.querySelector(".petal-layer");
@@ -9,17 +8,12 @@ const lightbox = document.getElementById("lightbox");
 const lightboxImage = document.getElementById("lightbox-image");
 const lightboxCaption = document.getElementById("lightbox-caption");
 const lightboxClose = document.getElementById("lightbox-close");
-const youtubePlayerFrame = document.getElementById("youtube-player");
-const musicStatus = document.getElementById("music-status");
+const backgroundAudio = document.getElementById("background-audio");
 const revealItems = document.querySelectorAll(".reveal");
 const photoCards = document.querySelectorAll(".photo-card");
 
-let isPlaying = false;
-let playerReady = false;
-let playerStarted = false;
-let playRequested = false;
 let petalIntervalId = null;
-let playerBaseUrl = "";
+let audioUnlocked = false;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -91,9 +85,12 @@ function updateCounter() {
   document.getElementById("hours").textContent = pad(hours);
   document.getElementById("minutes").textContent = pad(minutes);
   document.getElementById("seconds").textContent = pad(seconds);
-  document.getElementById("total-days").textContent = totalDays.toLocaleString("pt-BR");
-  document.getElementById("total-minutes").textContent = totalMinutes.toLocaleString("pt-BR");
-  document.getElementById("total-seconds").textContent = totalSeconds.toLocaleString("pt-BR");
+  document.getElementById("total-days").textContent =
+    totalDays.toLocaleString("pt-BR");
+  document.getElementById("total-minutes").textContent =
+    totalMinutes.toLocaleString("pt-BR");
+  document.getElementById("total-seconds").textContent =
+    totalSeconds.toLocaleString("pt-BR");
 }
 
 function handleReveal() {
@@ -195,84 +192,45 @@ function revealLetter() {
   openLetterButton.textContent = "Abrir minha carta para voce";
 }
 
-function updateMusicButton(label) {
-  musicToggleButton.textContent = label;
-}
-
 function updateMusicStatus(message) {
-  musicStatus.textContent = message;
+  const musicStatus = document.getElementById("music-status");
+  if (musicStatus) {
+    musicStatus.textContent = message;
+  }
 }
 
-function buildPlayerUrl({ autoplay = false } = {}) {
-  const params = new URLSearchParams({
-    enablejsapi: "1",
-    playsinline: "1",
-    rel: "0",
-    controls: "1",
-    loop: "1",
-    playlist: "mAaiVlKkZzE",
-    start: "10"
-  });
-
-  if (autoplay) {
-    params.set("autoplay", "1");
+async function tryPlayAudio() {
+  if (!backgroundAudio) {
+    return false;
   }
 
-  if (location.protocol !== "file:") {
-    params.set("origin", location.origin);
+  try {
+    await backgroundAudio.play();
+    audioUnlocked = true;
+    updateMusicStatus("Tocando agora");
+    return true;
+  } catch {
+    updateMusicStatus("Toque em qualquer lugar para iniciar a musica");
+    return false;
   }
-
-  return `https://www.youtube.com/embed/mAaiVlKkZzE?${params.toString()}`;
 }
 
-function sendPlayerCommand(command) {
-  youtubePlayerFrame.contentWindow?.postMessage(
-    JSON.stringify({
-      event: "command",
-      func: command,
-      args: []
-    }),
-    "https://www.youtube.com"
-  );
-}
+function setupAudioAutoplayFallback() {
+  const unlockAudio = async () => {
+    if (audioUnlocked) {
+      return;
+    }
 
-function toggleMusicPlayback() {
-  if (location.protocol === "file:") {
-    updateMusicStatus(
-      "O YouTube bloqueia o player em arquivo local. Abra esta pagina por http para a musica funcionar."
-    );
-    updateMusicButton("Player indisponivel em arquivo local");
-    return;
-  }
+    const started = await tryPlayAudio();
 
-  if (!playerReady) {
-    playRequested = true;
-    updateMusicButton("Carregando nossa musica...");
-    updateMusicStatus("Preparando a musica para tocar...");
-    return;
-  }
+    if (started) {
+      document.removeEventListener("pointerdown", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+    }
+  };
 
-  if (isPlaying) {
-    playRequested = false;
-    sendPlayerCommand("pauseVideo");
-    isPlaying = false;
-    updateMusicButton("Tocar nossa musica");
-    updateMusicStatus("Musica pausada");
-    return;
-  }
-
-  if (!playerStarted) {
-    const autoplayUrl = buildPlayerUrl({ autoplay: true });
-    youtubePlayerFrame.src = autoplayUrl;
-    playerStarted = true;
-  } else {
-    sendPlayerCommand("playVideo");
-  }
-
-  playRequested = false;
-  isPlaying = true;
-  updateMusicButton("Pausar musica");
-  updateMusicStatus("Tocando agora");
+  document.addEventListener("pointerdown", unlockAudio);
+  document.addEventListener("keydown", unlockAudio);
 }
 
 function setupEvents() {
@@ -280,36 +238,31 @@ function setupEvents() {
     storySection.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  musicToggleButton.addEventListener("click", toggleMusicPlayback);
   openLetterButton.addEventListener("click", revealLetter);
 }
 
-function setupMusicPlayer() {
-  if (location.protocol === "file:") {
-    updateMusicStatus(
-      "Para tocar aqui dentro da pagina, abra este projeto por http://localhost."
-    );
-    updateMusicButton("Player bloqueado no arquivo local");
+function setupMusic() {
+  if (!backgroundAudio) {
     return;
   }
 
-  playerBaseUrl = buildPlayerUrl();
-  youtubePlayerFrame.src = playerBaseUrl;
-  updateMusicStatus("Toque para ouvir sem sair da pagina");
+  backgroundAudio.volume = 0.85;
+  backgroundAudio.addEventListener("playing", () => {
+    audioUnlocked = true;
+    updateMusicStatus("Tocando agora");
+  });
+  backgroundAudio.addEventListener("pause", () => {
+    if (!backgroundAudio.ended) {
+      updateMusicStatus("Musica pausada");
+    }
+  });
+  backgroundAudio.addEventListener("ended", () => {
+    updateMusicStatus("Reiniciando nossa musica...");
+  });
+
+  tryPlayAudio();
+  setupAudioAutoplayFallback();
 }
-
-youtubePlayerFrame.addEventListener("load", () => {
-  playerReady = true;
-  if (playRequested && !isPlaying) {
-    toggleMusicPlayback();
-    return;
-  }
-
-  if (!isPlaying) {
-    updateMusicButton("Tocar nossa musica");
-    updateMusicStatus("Toque para ouvir sem sair da pagina");
-  }
-});
 
 updateCounter();
 window.setInterval(updateCounter, 1000);
@@ -317,6 +270,6 @@ handleReveal();
 startPetals();
 attachGalleryEvents();
 setupEvents();
-setupMusicPlayer();
+setupMusic();
 
 window.addEventListener("beforeunload", stopPetals);
