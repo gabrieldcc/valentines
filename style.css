@@ -489,7 +489,7 @@ h2 {
   right: 1rem;
   bottom: 1rem;
   z-index: 10;
-  display: flex;
+  display: none;
   align-items: center;
   gap: 1rem;
   width: min(26rem, calc(100% - 2rem));

@@ -209,7 +209,7 @@ function buildPlayerUrl({ autoplay = false } = {}) {
     rel: "0",
     controls: "1",
     loop: "1",
-    playlist: "UjNbyRUSsTQ",
+    playlist: "mAaiVlKkZzE",
     start: "10"
   });
 
@@ -221,7 +221,7 @@ function buildPlayerUrl({ autoplay = false } = {}) {
     params.set("origin", location.origin);
   }
 
-  return `https://www.youtube.com/embed/UjNbyRUSsTQ?${params.toString()}`;
+  return `https://www.youtube.com/embed/mAaiVlKkZzE?${params.toString()}`;
 }
 
 function sendPlayerCommand(command) {
