@@ -17,6 +17,7 @@ const photoCards = document.querySelectorAll(".photo-card");
 let isPlaying = false;
 let playerReady = false;
 let playerStarted = false;
+let playRequested = false;
 let petalIntervalId = null;
 let playerBaseUrl = "";
 
@@ -245,14 +246,18 @@ function toggleMusicPlayback() {
   }
 
   if (!playerReady) {
+    playRequested = true;
     updateMusicButton("Carregando nossa musica...");
+    updateMusicStatus("Preparando a musica para tocar...");
     return;
   }
 
   if (isPlaying) {
+    playRequested = false;
     sendPlayerCommand("pauseVideo");
     isPlaying = false;
     updateMusicButton("Tocar nossa musica");
+    updateMusicStatus("Musica pausada");
     return;
   }
 
@@ -264,8 +269,10 @@ function toggleMusicPlayback() {
     sendPlayerCommand("playVideo");
   }
 
+  playRequested = false;
   isPlaying = true;
   updateMusicButton("Pausar musica");
+  updateMusicStatus("Tocando agora");
 }
 
 function setupEvents() {
@@ -293,8 +300,14 @@ function setupMusicPlayer() {
 
 youtubePlayerFrame.addEventListener("load", () => {
   playerReady = true;
+  if (playRequested && !isPlaying) {
+    toggleMusicPlayback();
+    return;
+  }
+
   if (!isPlaying) {
     updateMusicButton("Tocar nossa musica");
+    updateMusicStatus("Toque para ouvir sem sair da pagina");
   }
 });
 
